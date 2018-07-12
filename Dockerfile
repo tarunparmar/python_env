@@ -1,50 +1,23 @@
-# reference: https://hub.docker.com/_/ubuntu/
-FROM ubuntu:16.04
+FROM continuumio/anaconda3
+MAINTAINER "Andrei Maksimov"
 
-# Adds metadata to the image as a key value pair example LABEL version="1.0"
-LABEL maintainer="Tarun Parmar <www.github.com/tarunparmar>"
+RUN apt-get update && apt-get install -y libgtk2.0-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    /opt/conda/bin/conda install jupyter -y && \
+    /opt/conda/bin/conda install -c menpo opencv3 -y && \
+    /opt/conda/bin/conda install numpy pandas scikit-learn matplotlib seaborn pyyaml h5py keras -y && \
+    /opt/conda/bin/conda upgrade dask && \
+    pip install tensorflow imutils
 
-##Set environment variables
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+RUN ["mkdir", "notebooks"]
 
-RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
-    build-essential \
-    byobu \
-    curl \
-    git-core \
-    htop \
-    pkg-config \
-    python3-dev \
-    python3-pip \
-    python-setuptools \
-    python-virtualenv \
-    unzip \
-    && \
-apt-get clean && \
-rm -rf /var/lib/apt/lists/*
+COPY jupyter_notebook_config.py /root/.jupyter/
+COPY run_jupyter.sh /
 
-RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.continuum.io/archive/Anaconda3-5.0.0.1-Linux-x86_64.sh -O ~/anaconda.sh && \
-    /bin/bash ~/anaconda.sh -b -p /opt/conda && \
-    rm ~/anaconda.sh
+# Jupyter and Tensorboard ports
+EXPOSE 8888 6006
 
-ENV PATH /opt/conda/bin:$PATH
+# Store notebooks in this mounted directory
+VOLUME /notebooks
 
-RUN pip3 --no-cache-dir install --upgrade \
-        altair \
-        sklearn-pandas
-
-# Open Ports for Jupyter
-EXPOSE 7745
-
-#Setup File System
-RUN mkdir ds
-ENV HOME=/ds
-ENV SHELL=/bin/bash
-VOLUME /ds
-WORKDIR /ds
-ADD run_jupyter.sh /ds/run_jupyter.sh
-RUN chmod +x /ds/run_jupyter.sh
-
-# Run the shell
-CMD  ["./run_jupyter.sh"]
+CMD ["/run_jupyter.sh"]
