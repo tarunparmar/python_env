@@ -3,7 +3,7 @@ MAINTAINER "Andrei Maksimov"
 
 RUN apt-get update && apt-get install -y libgtk2.0-dev && \
     rm -rf /var/lib/apt/lists/* && \
-    /opt/conda/bin/cond install python=3.5
+    /opt/conda/bin/conda install python=3.5
     /opt/conda/bin/conda install jupyter -y && \
     /opt/conda/bin/conda install -c menpo opencv3 -y && \
     /opt/conda/bin/conda install numpy pandas scikit-learn matplotlib seaborn pyyaml h5py keras -y && \
